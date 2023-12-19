@@ -33,8 +33,7 @@ jobs:
         image_additional_mb: 1500
         base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-12-11/2023-12-11-raspios-bookworm-arm64-lite.img.xz
         commands: |
-            apt-get update
-            apt-get install -y libopencv-dev libegl1-mesa-dev libcamera-dev cmake build-essential libdrm-dev libgbm-dev default-jdk openjdk-17-jdk
+            apt-get update # TODO
 
     - name: Move and rename image with dependencies
       if: steps.cache.outputs.cache-hit != 'true'
