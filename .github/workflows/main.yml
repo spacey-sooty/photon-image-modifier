@@ -10,8 +10,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
     
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: limelight
+            script: ./install_limelight.sh
+          - name: raspi
+            script: ./install_pi.sh
+
+    name: "Build for ${{ matrix.name }}"
+
+    steps:
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
@@ -32,36 +43,16 @@ jobs:
         optimize_image: no
         image_additional_mb: 1500
         base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-12-11/2023-12-11-raspios-bookworm-arm64-lite.img.xz
-        commands: |
-            ./install_pi.sh
+        commands: ${{ matrix.script }}
 
     - name: Move and rename image with dependencies
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
-        export IMAGE=photonvision_$(git describe --tags --match=v*).img
+        export IMAGE=photonvision_$(git describe --tags --match=v*)_${{ matrix.name }}.img
         mv ${{ steps.install_deps.outputs.image }} $RUNNER_TEMP/$IMAGE
         tar -cJf $IMAGE.tar.xz $RUNNER_TEMP/$IMAGE
 
     - uses: actions/upload-artifact@master
       with:
-        name: photon-image
+        name: photon-image-${{ matrix.name }}
         path: "*.tar.xz"
-
-    # Push to dev release on pushes to master
-    - uses: pyTooling/Actions/releaser@r0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        tag: 'Dev'
-        rm: true
-        files: |
-          *.tar.xz
-      if: github.event_name == 'push'
-
-    # Push to actual release, if tagged
-    - uses: softprops/action-gh-release@v1
-      with:
-        files: |
-          *.tar.xz
-      if: startsWith(github.ref, 'refs/tags/v')
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
