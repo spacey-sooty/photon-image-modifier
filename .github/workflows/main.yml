@@ -17,8 +17,10 @@ jobs:
         include:
           - name: limelight
             script: ./install_limelight.sh
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-12-11/2023-12-11-raspios-bookworm-arm64-lite.img.xz
           - name: raspi
             script: ./install_pi.sh
+            base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-12-11/2023-12-11-raspios-bookworm-arm64-lite.img.xz
 
     name: "Build for ${{ matrix.name }}"
 
@@ -33,19 +35,21 @@ jobs:
     - uses: actions/cache@v3
       id: cache
       with:
-        path: $RUNNER_TEMP/photon_libcam_builder.img
-        key: ${{ hashFiles('**/*.yml') }}
+        path: $RUNNER_TEMP/base_system.img
+        key: ${{ matrix.base_image }}
+
+    # Grab if we couldn't find it in the cache
+    - run: wget -O $RUNNER_TEMP/base_system.img ${{ matrix.base_image }}
+      if: steps.cache.outputs.cache-hit != 'true'
+
     - uses: pguyot/arm-runner-action@HEAD
       id: install_deps
-      if: steps.cache.outputs.cache-hit != 'true'
       with:
-        # we don't want to optimize as it's two-stage
-        optimize_image: no
         image_additional_mb: 1500
-        base_image: https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2023-12-11/2023-12-11-raspios-bookworm-arm64-lite.img.xz
+        base_image: ${{ matrix.base_image }}
         commands: ${{ matrix.script }}
 
-    - name: Move and rename image with dependencies
+    - name: Compress built image
       if: steps.cache.outputs.cache-hit != 'true'
       run: |
         export IMAGE=photonvision_$(git describe --tags --match=v*)_${{ matrix.name }}.img
