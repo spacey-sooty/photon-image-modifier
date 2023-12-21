@@ -9,3 +9,6 @@ sudo ./install.sh
 
 find /boot/
 cat /boot/config.txt
+
+install -m 644 config.txt /boot/
+install -m 644 userconf.txt /boot/

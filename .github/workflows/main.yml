@@ -46,16 +46,16 @@ jobs:
       id: install_deps
       with:
         image_additional_mb: 1500
-        base_image: ${{ matrix.base_image }}
+        base_image: file://$RUNNER_TEMP/base_system.img
         commands: ${{ matrix.script }}
 
     - name: Compress built image
       run: |
         export IMAGE=photonvision_$(git describe --tags --match=v*)_${{ matrix.name }}.img
         mv ${{ steps.install_deps.outputs.image }} $RUNNER_TEMP/$IMAGE
-        tar -cJf $IMAGE.tar.xz $RUNNER_TEMP/$IMAGE
+        tar -cJf $RUNNER_TEMP/$IMAGE.tar.xz $RUNNER_TEMP/$IMAGE
 
     - uses: actions/upload-artifact@master
       with:
         name: photon-image-${{ matrix.name }}
-        path: "$RUNNER_TEMP/base_system.img"
+        path: $RUNNER_TEMP/$IMAGE.tar.xz
