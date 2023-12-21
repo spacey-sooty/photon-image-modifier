@@ -3,9 +3,9 @@
 cd /tmp 
 wget https://git.io/JJrEP -O install.sh
 chmod +x install.sh
-sudo ./install.sh
+./install.sh
 
-sudo apt-get install -y pigpiod pigpio device-tree-compiler dhcpcd5 network-manager net-tools
+apt-get install -y pigpiod pigpio device-tree-compiler dhcpcd5 network-manager net-tools
 
 # and edit boot partition
 
