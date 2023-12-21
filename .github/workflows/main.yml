@@ -47,4 +47,4 @@ jobs:
     - uses: actions/upload-artifact@master
       with:
         name: photon-image-${{ matrix.name }}
-        path: *.tar.xz
+        path: "*.tar.xz"
