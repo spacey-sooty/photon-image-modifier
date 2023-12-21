@@ -42,9 +42,9 @@ jobs:
       run: |
         export IMAGE=photonvision_$(git describe --tags --match=v*)_${{ matrix.name }}.img
         mv ${{ steps.install_deps.outputs.image }} $RUNNER_TEMP/$IMAGE
-        tar -cJf $RUNNER_TEMP/$IMAGE.tar.xz $RUNNER_TEMP/$IMAGE
+        tar -cJf $IMAGE.tar.xz $RUNNER_TEMP/$IMAGE
 
     - uses: actions/upload-artifact@master
       with:
         name: photon-image-${{ matrix.name }}
-        path: $RUNNER_TEMP/*.tar.xz
+        path: *.tar.xz
