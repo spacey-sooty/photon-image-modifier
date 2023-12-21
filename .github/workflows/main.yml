@@ -50,7 +50,6 @@ jobs:
         commands: ${{ matrix.script }}
 
     - name: Compress built image
-      if: steps.cache.outputs.cache-hit != 'true'
       run: |
         export IMAGE=photonvision_$(git describe --tags --match=v*)_${{ matrix.name }}.img
         mv ${{ steps.install_deps.outputs.image }} $RUNNER_TEMP/$IMAGE
@@ -59,4 +58,4 @@ jobs:
     - uses: actions/upload-artifact@master
       with:
         name: photon-image-${{ matrix.name }}
-        path: "*.tar.xz"
+        path: "$RUNNER_TEMP/base_system.img"
