@@ -31,22 +31,11 @@ jobs:
     - name: Fetch tags
       run: git fetch --tags --force
 
-    # From https://github.com/pguyot/arm-runner-action/blob/main/.github/workflows/test-cache.yml
-    - uses: actions/cache@v3
-      id: cache
-      with:
-        path: $RUNNER_TEMP/base_system.img
-        key: ${{ matrix.base_image }}
-
-    # Grab if we couldn't find it in the cache
-    - run: wget -O $RUNNER_TEMP/base_system.img ${{ matrix.base_image }}
-      if: steps.cache.outputs.cache-hit != 'true'
-
     - uses: pguyot/arm-runner-action@HEAD
       id: install_deps
       with:
         image_additional_mb: 1500
-        base_image: file://$RUNNER_TEMP/base_system.img
+        base_image: ${{ matrix.base_image }}
         commands: ${{ matrix.script }}
 
     - name: Compress built image
