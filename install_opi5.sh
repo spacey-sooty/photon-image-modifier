@@ -1,3 +1,6 @@
+apt-get update
+apt-get upgrade -y
+
 cd /tmp 
 wget https://git.io/JJrEP -O install.sh
 chmod +x install.sh
