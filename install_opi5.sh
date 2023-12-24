@@ -1,3 +1,7 @@
+find /
+
+find / -name user-data
+
 apt-get update
 apt-get upgrade -y
 
