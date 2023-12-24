@@ -24,10 +24,10 @@ systemctl enable ssh
 # Remove extra packages too
 
 # apt-get purge -y python3 gdb gcc g++ linux-headers* libgcc*-dev *qt*
-apt-get autoremove -y
+# apt-get autoremove -y
 
-rm -rf /var/lib/apt/lists/*
-apt-get clean
+# rm -rf /var/lib/apt/lists/*
+# apt-get clean
 
-rm -rf /usr/share/doc
-rm -rf /usr/share/locale/
+# rm -rf /usr/share/doc
+# rm -rf /usr/share/locale/
