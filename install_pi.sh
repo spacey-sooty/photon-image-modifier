@@ -2,8 +2,8 @@
 
 wget https://git.io/JJrEP -O install.sh
 chmod +x install.sh
-# ./install.sh
-# rm install.sh
+./install.sh
+rm install.sh
 
 echo "Installing additional things"
 sudo apt-get update
