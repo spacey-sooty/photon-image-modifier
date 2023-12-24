@@ -1,11 +1,15 @@
-# Run normal photon instarller
+# Run normal photon installer
 
-cd /tmp 
 wget https://git.io/JJrEP -O install.sh
 chmod +x install.sh
 ./install.sh
+rm install.sh
 
-apt-get install -y pigpiod pigpio device-tree-compiler dhcpcd5 network-manager net-tools
+echo "Installing additional things"
+sudo apt-get update
+apt-get install -y pigpiod pigpio device-tree-compiler 
+apt-get install -y network-manager
+apt-get install -y net-tools
 
 # and edit boot partition
 
@@ -18,9 +22,12 @@ dtc -O dtb limelight/gloworm-dt.dts -o /boot/dt-blob.bin
 install -v -m 644 files/wait.conf /etc/systemd/system/dhcpcd.service.d/
 install -v files/rpi-blacklist.conf /etc/modprobe.d/blacklist.conf
 
+# Enable ssh
+systemctl enable ssh
+
 # Remove extra packages too
 
-apt-get purge -y python3 gdb gcc g++ linux-headers* libgcc*-dev *qt* wpasupplicant wireless-tools firmware-atheros firmware-brcm80211 firmware-libertas firmware-misc-nonfree firmware-realtek raspberrypi-net-mods device-tree-compiler
+apt-get purge -y python3 gdb gcc g++ linux-headers* libgcc*-dev libqt* wpasupplicant wireless-tools firmware-atheros firmware-brcm80211 firmware-libertas firmware-misc-nonfree firmware-realtek raspberrypi-net-mods device-tree-compiler
 apt-get autoremove -y
 
 rm -rf /var/lib/apt/lists/*
