@@ -1,4 +1,4 @@
-# Run normal photon instarller
+# Run normal photon installer
 
 wget https://git.io/JJrEP -O install.sh
 chmod +x install.sh

@@ -43,11 +43,12 @@ jobs:
 
     - name: Compress built image
       run: |
-        export IMAGE=photonvision_$(git describe --tags --match=v*)_${{ matrix.name }}.img
-        mv ${{ steps.install_deps.outputs.image }} $RUNNER_TEMP/$IMAGE
-        tar -cJf $IMAGE.tar.xz $RUNNER_TEMP/$IMAGE
+        mv ${{ steps.install_deps.outputs.image }} photonvision_${{ matrix.name }}.img
+        sudo xz -T 0 -v photonvision_${{ matrix.name }}.img
 
     - uses: actions/upload-artifact@master
       with:
-        name: photon-image-${{ matrix.name }}
-        path: "*.tar.xz"
+        name: photonvision_${{ matrix.name }}.img.xz
+        path: photonvision_${{ matrix.name }}.img.xz
+        if-no-files-found: error
+        retention-days: 1
