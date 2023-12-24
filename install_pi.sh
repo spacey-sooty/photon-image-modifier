@@ -10,6 +10,8 @@ sudo apt-get update
 apt-get install -y pigpiod pigpio device-tree-compiler 
 apt-get install -y network-manager
 apt-get install -y net-tools
+# libcamera-driver stuff
+apt-get install -y libegl1 libopengl0 libopencv-core406 libgl1-mesa-dri libcamera0 libgbm1 
 
 # and edit boot partition
 install -m 644 config.txt /boot/
