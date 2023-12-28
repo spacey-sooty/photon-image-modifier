@@ -21,8 +21,9 @@ sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' install.sh
 rm install.sh
 
 sudo apt-get update
-apt-get install -y network-manager net-tools 
+apt-get install -y network-manager net-tools libatomic1
 apt-mark manual netplan.io
+apt-mark manual libatomic1
 
 cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
