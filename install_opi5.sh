@@ -5,7 +5,7 @@ if id "$1" >/dev/null 2>&1; then
 else
     echo "creating pi user"
     useradd pi -b /home
-    sudo usermod -a -G sudo pi
+    usermod -a -G sudo pi
 fi
 echo "pi:raspberry" | chpasswd
 
@@ -20,11 +20,11 @@ rm install.sh
 
 # Remove extra packages 
 
-apt-get purge -y python3 gdb gcc g++ linux-headers* libgcc*-dev *qt*
-apt-get autoremove -y
+# apt-get purge -y python3 gdb gcc g++ linux-headers* libgcc*-dev *qt*
+# apt-get autoremove -y
 
-rm -rf /var/lib/apt/lists/*
-apt-get clean
+# rm -rf /var/lib/apt/lists/*
+# apt-get clean
 
-rm -rf /usr/share/doc
-rm -rf /usr/share/locale/
+# rm -rf /usr/share/doc
+# rm -rf /usr/share/locale/
