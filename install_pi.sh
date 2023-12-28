@@ -13,6 +13,9 @@ apt-get install -y net-tools
 # libcamera-driver stuff + libatomic1 for wpilib
 apt-get install -y libegl1 libopengl0 libopencv-core406 libgl1-mesa-dri libcamera0.1 libgbm1 libatomic1
 
+# And keep rpi-bin installed, ideally
+apt-mark manual libraspberrypi-bin
+
 # and edit boot partition
 install -m 644 config.txt /boot/
 install -m 644 userconf.txt /boot/
