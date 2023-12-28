@@ -18,13 +18,18 @@ sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' install.sh
 ./install.sh
 rm install.sh
 
+sudo apt-get update
+apt-get install -y network-manager net-tools 
+
+apt-mark manual netplan.io
+
 # Remove extra packages 
 
-# apt-get purge -y python3 gdb gcc g++ linux-headers* libgcc*-dev *qt*
-# apt-get autoremove -y
+apt-get remove -y python3 gdb gcc g++ linux-headers* libgcc*-dev
+apt-get autoremove -y
 
-# rm -rf /var/lib/apt/lists/*
-# apt-get clean
+rm -rf /var/lib/apt/lists/*
+apt-get clean
 
-# rm -rf /usr/share/doc
-# rm -rf /usr/share/locale/
+rm -rf /usr/share/doc
+rm -rf /usr/share/locale/
