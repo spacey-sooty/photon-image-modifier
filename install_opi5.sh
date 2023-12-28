@@ -13,6 +13,15 @@ sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' install.sh
 
 ./install.sh
 
+if id "$1" >/dev/null 2>&1; then
+    echo 'user found'
+else
+    echo "creating pi user"
+    useradd pi -b /home
+fi
+
+echo "pi:raspberry" | chpasswd
+
 # Remove extra packages too
 
 apt-get purge -y python3 gdb gcc g++ linux-headers* libgcc*-dev *qt*
