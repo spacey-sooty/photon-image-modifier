@@ -13,17 +13,15 @@ apt-get install -y net-tools
 # libcamera-driver stuff
 apt-get install -y libegl1 libopengl0 libopencv-core406 libgl1-mesa-dri libcamera0.1 libgbm1 libatomic1
 
-# and edit boot partition
+# And keep rpi-bin installed
+apt-mark manual libraspberrypi-bin
 
+# edit boot partition
 install -m 644 limelight/config.txt /boot/
 install -m 644 userconf.txt /boot/
 
 # install LL DTS
 dtc -O dtb limelight/gloworm-dt.dts -o /boot/dt-blob.bin
-
-# re-size FS, again, at next boot
-wget https://raw.githubusercontent.com/PhotonVision/photon-pi-gen/arm64/stage2/01-sys-tweaks/files/resize2fs_once -O files/resize2fs_once
-install -m 755 files/resize2fs_once	"${ROOTFS_DIR}/etc/init.d/"
 
 # Kill wifi and other networking things
 install -v -m 644 files/wait.conf /etc/systemd/system/dhcpcd.service.d/
