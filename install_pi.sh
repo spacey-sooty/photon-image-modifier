@@ -21,11 +21,6 @@ install -m 644 userconf.txt /boot/
 install -v -m 644 files/wait.conf /etc/systemd/system/dhcpcd.service.d/
 install -v files/rpi-blacklist.conf /etc/modprobe.d/blacklist.conf
 
-# re-size FS, again, at next boot
-wget https://raw.githubusercontent.com/PhotonVision/photon-pi-gen/arm64/stage2/01-sys-tweaks/files/resize2fs_once -O files/resize2fs_once
-install -m 755 files/resize2fs_once	/etc/init.d/
-systemctl enable resize2fs_once  
-
 # Update pigipio service file to listen locally
 install -v -m 644 files/pigpiod.service /lib/systemd/system/pigpiod.service
 systemctl daemon-reload
