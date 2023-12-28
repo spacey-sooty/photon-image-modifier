@@ -1,24 +1,24 @@
-apt-get update
-apt-get upgrade -y
 
-cd /tmp 
+# Create pi/raspberry login
+if id "$1" >/dev/null 2>&1; then
+    echo 'user found'
+else
+    echo "creating pi user"
+    useradd pi -b /home
+    sudo usermod -a -G sudo pi
+fi
+echo "pi:raspberry" | chpasswd
+
+apt-get update
 wget https://git.io/JJrEP -O install.sh
 chmod +x install.sh
 
 sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' install.sh
 
 ./install.sh
+rm install.sh
 
-if id "$1" >/dev/null 2>&1; then
-    echo 'user found'
-else
-    echo "creating pi user"
-    useradd pi -b /home
-fi
-
-echo "pi:raspberry" | chpasswd
-
-# Remove extra packages too
+# Remove extra packages 
 
 apt-get purge -y python3 gdb gcc g++ linux-headers* libgcc*-dev *qt*
 apt-get autoremove -y
