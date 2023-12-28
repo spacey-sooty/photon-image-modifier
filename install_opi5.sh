@@ -7,6 +7,7 @@ else
     useradd pi -b /home
     usermod -a -G sudo pi
     mkdir /home/pi
+    chown -R pi /home/pi
 fi
 echo "pi:raspberry" | chpasswd
 
