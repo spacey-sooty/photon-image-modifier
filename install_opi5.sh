@@ -15,8 +15,9 @@ apt-get update --quiet
 
 before=$(df --output=used / | tail -n1)
 # clean up stuff
-echo 'Purging snaps'
+
 # get rid of snaps
+echo "Purging snaps"
 rm -rf /var/lib/snapd/seed/snaps/*
 rm -f /var/lib/snapd/seed/seed.yaml
 apt-get purge --yes --quiet lxd-installer lxd-agent-loader
@@ -34,7 +35,7 @@ echo "Freed up $freed KiB"
 
 # run Photonvision install script
 chmod +x ./install.sh
-./install.sh -m -q
+./install.sh --install-nm=yes --arch=aarch64
 
 echo "Installing additional things"
 apt-get install --yes --quiet libc6 libstdc++6
@@ -48,11 +49,14 @@ cp -f ./OPi5_CIDATA/network-config /boot/network-config
 # add customized user-data file for cloud-init
 cp -f ./OPi5_CIDATA/user-data /boot/user-data
 
+# modify photonvision.service to enable big cores
+sed -i 's/# AllowedCPUs=4-7/AllowedCPUs=4-7/g' /lib/systemd/system/photonvision.service
+
 # modify photonvision.service to wait for the network before starting
 # this helps ensure that photonvision detects the network the first time it starts
 # but it may cause a startup delay if the coprocessor isn't connected to a network
 sed -i '/Description/aAfter=network-online.target' /lib/systemd/system/photonvision.service
-cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
+cp -f /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
 cat /etc/systemd/system/photonvision.service
 
