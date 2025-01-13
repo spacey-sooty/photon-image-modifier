@@ -1,3 +1,8 @@
+#!/bin/bash -v
+
+# Verbose and exit on errors
+set -ex
+
 # Run normal photon installer
 chmod +x ./install.sh
 ./install.sh --install-nm=yes --arch=aarch64
@@ -7,7 +12,7 @@ install -m 644 config.txt /boot/
 install -m 644 userconf.txt /boot/
 
 # Kill wifi and other networking things
-install -v -m 644 files/wait.conf /etc/systemd/system/dhcpcd.service.d/
+install -v -m 644 -D -t /etc/systemd/system/dhcpcd.service.d/ files/wait.conf
 install -v files/rpi-blacklist.conf /etc/modprobe.d/blacklist.conf
 
 # Update pigipio service file to listen locally

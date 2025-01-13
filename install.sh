@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Verbose and exit on errors
+set -ex
+
 needs_arg() {
     if [ -z "$OPTARG" ]; then
       die "Argument is required for --$OPT option" \
@@ -29,11 +32,17 @@ package_is_installed(){
 install_if_missing() {
   if package_is_installed "$1" ; then
     debug "Found existing $1. Skipping..."
+    # Always mark our upstream apt deps as held back, which will prevent the package 
+    # from being automatically installed, upgraded or removed
+    apt-mark manual "$1"
     return
   fi
 
   debug "Installing $1..."
   apt-get install --yes "$1"
+  # Always mark our upstream apt deps as held back, which will prevent the package 
+  # from being automatically installed, upgraded or removed
+  apt-mark manual "$1"
   debug "$1 installation complete."
 }
 
@@ -78,6 +87,14 @@ is_version_available() {
   fi
 
   return 0
+}
+
+is_chroot() {
+  if systemd-detect-virt -r; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 help() {
@@ -171,6 +188,10 @@ if [ "$(id -u)" != "0" ]; then
    die "This script must be run as root"
 fi
 
+if is_chroot ; then
+  debug "Running in chroot. Arch should be specified."
+fi
+
 if [[ -z "$ARCH" ]]; then
   debug "Arch was not specified. Inferring..."
   ARCH=$(uname -m)
@@ -240,10 +261,12 @@ if [[ "$INSTALL_NETWORK_MANAGER" == "yes" ]]; then
 
   debug "Configuring..."
   systemctl disable systemd-networkd-wait-online.service
-  cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
+  if [[ -d /etc/netplan/ ]]; then
+    cat > /etc/netplan/00-default-nm-renderer.yaml <<EOF
 network:
   renderer: NetworkManager
 EOF
+  fi
   debug "network-manager installation complete."
 fi
 
@@ -285,7 +308,7 @@ debug "Downloaded PhotonVision."
 debug "Creating the PhotonVision systemd service..."
 
 # service --status-all doesn't list photonvision on OrangePi use systemctl instead:
-if systemctl --quiet is-active photonvision; then
+if [[ $(systemctl --quiet is-active photonvision) = "active" ]]; then
   debug "PhotonVision is already running. Stopping service."
   systemctl stop photonvision
   systemctl disable photonvision
