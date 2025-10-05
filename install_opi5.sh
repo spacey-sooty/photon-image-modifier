@@ -3,17 +3,17 @@
 # Verbose and exit on errors
 set -ex
 
-# Create pi/raspberry login
-if id "$1" >/dev/null 2>&1; then
-    echo 'user found'
-else
-    echo "creating pi user"
-    useradd pi -m -b /home -s /bin/bash
-    usermod -a -G sudo pi
-    echo 'pi ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/010_pi-nopasswd >/dev/null
-    chmod 0440 /etc/sudoers.d/010_pi-nopasswd
-fi
-echo "pi:raspberry" | chpasswd
+# # Create pi/raspberry login
+# if id "$1" >/dev/null 2>&1; then
+#     echo 'user found'
+# else
+#     echo "creating pi user"
+#     useradd pi -m -b /home -s /bin/bash
+#     usermod -a -G sudo pi
+#     echo 'pi ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/010_pi-nopasswd >/dev/null
+#     chmod 0440 /etc/sudoers.d/010_pi-nopasswd
+# fi
+# echo "pi:raspberry" | chpasswd
 
 apt-get update --quiet
 
