@@ -58,6 +58,9 @@ jobs:
           - name: rock5c
             script: ./install_opi5.sh
             base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-24.04-preinstalled-server-arm64-rock-5c.img.xz
+          - name: radxacm5io
+            script: ./install_opi5.sh
+            base_image: https://dl.radxa.com/rock5/sw/images/loader/rock-5a/rock-5a-spi-image-g4b32117-20230605.img
 
     name: "Build for ${{ matrix.name }}"
 
