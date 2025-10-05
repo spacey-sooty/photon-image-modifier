@@ -35,7 +35,7 @@ jobs:
     - uses: pguyot/arm-runner-action@HEAD
       id: install_deps
       with:
-        image_additional_mb: 1500
+        image_additional_mb: 3500
         bind_mount_repository: true
         base_image: ${{ matrix.base_image }}
         commands: |
