@@ -21,7 +21,7 @@ jobs:
         include:
           - name: radxacm5io
             script: ./install_opi5.sh
-            base_image: https://github.com/Joshua-Riek/ubuntu-rockchip/releases/download/v2.4.0/ubuntu-22.04-preinstalled-server-arm64-radxa-cm5-io.img.xz
+            base_image: https://github.com/spacey-sooty/ubuntu-rockchip/releases/download/ov9281-test-1/ubuntu-24.04-preinstalled-server-arm64-radxa-cm5-io.img.xz
 
     name: "Build for ${{ matrix.name }}"
 
