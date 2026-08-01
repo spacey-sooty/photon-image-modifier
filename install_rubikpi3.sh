@@ -3,6 +3,74 @@
 # Exit on errors, print commands, ignore unset variables
 set -ex +u
 
+echo "=== Pre-upgrade space ==="
+df -h
+
+# Free up space BEFORE upgrading, so the dist-upgrade has room to work
+# get rid of snap seeds
+rm -rf /var/lib/snapd/seed/snaps/* 2>/dev/null || true
+rm -f /var/lib/snapd/seed/seed.yaml 2>/dev/null || true
+
+# Remove packages that waste space and aren't needed in the final image
+apt-get purge --yes lxd-installer lxd-agent-loader snapd gdb gcc g++ linux-headers* libgcc*-dev perl-modules* git vim-runtime python3-twisted bluez 2>/dev/null || true
+
+# Remove filesystem/RAID/crypto tools not needed on the rubikpi3 (ext4 root).
+# This also shrinks the 26.04 dracut/initramfs by skipping their hooks.
+apt-get purge --yes btrfs-progs lvm2 cryptsetup cryptsetup-initramfs mdadm multipath-tools open-iscsi 2>/dev/null || true
+
+# Remove misc services not needed on a headless vision appliance
+apt-get purge --yes fwupd apport ubuntu-advantage-tools landscape-common motd-news-config friendly-recovery command-not-found plymouth bolt cups alsa-utils 2>/dev/null || true
+
+# Remove packages that conflict with the 26.04 upgrade
+apt-get remove --yes libgstreamer-qcom1.0-0 sosreport 2>/dev/null || true
+
+apt-get autoremove --purge -y
+rm -rf /var/lib/apt/lists/*
+apt-get clean
+
+rm -rf /usr/share/doc
+rm -rf /usr/share/locale/
+
+# Remove firmware for hardware that the rubikpi3 definitely doesn't have
+rm -rf /usr/lib/firmware/mrvl
+rm -rf /usr/lib/firmware/mellanox
+rm -rf /usr/lib/firmware/nvidia
+rm -rf /usr/lib/firmware/intel
+rm -rf /usr/lib/firmware/amd
+rm -rf /usr/lib/firmware/amdgpu
+rm -rf /usr/lib/firmware/i915
+rm -rf /usr/lib/firmware/radeon
+
+echo "=== Space after pre-cleanup ==="
+df -h
+
+# Pre-configure grub to avoid interactive prompts in chroot
+debconf-set-selections <<< "grub-efi-arm64 grub-efi/install_devices multiselect"
+debconf-set-selections <<< "grub-efi-arm64 grub-efi/install_devices_empty boolean true"
+
+# Upgrade from 24.04 to 26.04 via direct dist-upgrade
+# More space-efficient than do-release-upgrade (doesn't keep old packages)
+sed -i 's/noble/resolute/g' /etc/apt/sources.list.d/ubuntu.sources 2>/dev/null || true
+sed -i 's/noble/resolute/g' /etc/apt/sources.list 2>/dev/null || true
+DEBIAN_FRONTEND=noninteractive apt-get -y update
+DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-overwrite" -y upgrade || true
+DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::="--force-overwrite" -y dist-upgrade || true
+# Remove dragonwing initramfs hook that fails in chroot
+rm -f /usr/share/initramfs-tools/hooks/linux-firmware-dragonwing
+# Fix dpkg state after upgrade (some pkg configs fail in chroot)
+dpkg --configure -a 2>/dev/null || true
+apt-get --fix-broken install -y 2>/dev/null || true
+# Regenerate grub.cfg now that the kernel/initramfs are actually in place
+# (the kernel postinst ran before the initramfs existed, so grub.cfg has no entries)
+update-grub 2>/dev/null || true
+apt autoremove --purge -y
+# Remove old 24.04 kernels, keep the new 26.04 one(s)
+dpkg -l | awk '/^ii.*linux-(image|headers|modules)/{print $2}' | sort -V | head -n -1 | xargs apt-get purge --yes 2>/dev/null || true
+apt-get clean
+
+echo "=== Space after upgrade ==="
+df -h
+
 cd /tmp/build
 echo '=== Current directory: $(pwd) ==='
 echo '=== Files in current directory: ==='
@@ -27,7 +95,7 @@ EOF_DPKG
 cat > /etc/apt/sources.list.d/ubuntu.sources << EOF_UBUNTU_SOURCES
 Types: deb
 URIs: http://ports.ubuntu.com/ubuntu-ports
-Suites: noble noble-updates noble-backports
+Suites: resolute resolute-updates resolute-backports
 Components: main universe restricted multiverse
 Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
 EOF_UBUNTU_SOURCES
@@ -36,9 +104,6 @@ EOF_UBUNTU_SOURCES
 
 apt-get -q update
 
-# This needs to run before install.sh to fix some weird dependency issues
-apt-get -y --allow-downgrades install libsqlite3-0=3.45.1-1ubuntu2
-
 # Add the GPG key for the RUBIK Pi PPA
 wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads/web/rubik-pi-3/tools/key.asc | tee /etc/apt/trusted.gpg.d/rubikpi3.asc
 
@@ -46,11 +111,6 @@ wget -qO - https://thundercomm.s3.dualstack.ap-northeast-1.amazonaws.com/uploads
 echo "Space available before purging things"
 df -h
 
-# get rid of snaps
-echo "Purging snaps"
-rm -rf /var/lib/snapd/seed/snaps/*
-rm -f /var/lib/snapd/seed/seed.yaml
-apt-get purge --yes lxd-installer lxd-agent-loader snapd gdb gcc g++ linux-headers* libgcc*-dev perl-modules* git vim-runtime python3-twisted sosreport bluez
 apt-get autoremove --yes
 
 rm -rf /var/lib/apt/lists/*
@@ -134,15 +194,11 @@ EOF_FAN_SERVICE
 # 4. Enable the new service
 systemctl enable rubik-fan-max.service
 
-echo "Space available before purging things"
-df -h /dev/loop0
+echo "Space available before final cleanup"
+df -h
 
 rm -rf /var/lib/apt/lists/*
-df -h /dev/loop0
-
 apt-get clean
-df -h /dev/loop0
-
 rm -rf /usr/share/doc
 rm -rf /usr/share/locale/
 
@@ -152,5 +208,5 @@ rm -rf /usr/lib/firmware/mellanox
 rm -rf /usr/lib/firmware/nvidia
 rm -rf /usr/lib/firmware/intel
 
-echo "Space available after purging things"
-df -h /dev/loop0
+echo "Space available after final cleanup"
+df -h
