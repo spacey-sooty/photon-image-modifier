@@ -68,6 +68,25 @@ apt autoremove --purge -y
 dpkg -l | awk '/^ii.*linux-(image|headers|modules)/{print $2}' | sort -V | head -n -1 | xargs apt-get purge --yes 2>/dev/null || true
 apt-get clean
 
+# Ensure Hexagon DSP firmware is included and enabled, required for OD
+cat > /etc/initramfs-tools/hooks/qcom-dsp-firmware << 'EOF_DSP_HOOK'
+#!/bin/sh
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in prereqs) prereqs; exit 0;; esac
+. /usr/share/initramfs-tools/hook-functions
+for fw in qcom/qcs6490/cdsp.mbn qcom/qcs6490/Thundercomm/RubikPi3/adsp.mbn; do
+    add_firmware "$fw" || echo "W: qcom-dsp-firmware: $fw not found, DSPs will not boot" >&2
+done
+EOF_DSP_HOOK
+chmod 755 /etc/initramfs-tools/hooks/qcom-dsp-firmware
+
+update-initramfs -u -k all
+for fw in qcom/qcs6490/cdsp.mbn qcom/qcs6490/Thundercomm/RubikPi3/adsp.mbn; do
+    lsinitramfs /boot/initrd.img | grep -q "firmware/.*${fw}$" \
+        || { echo "ERROR: ${fw} missing from initramfs" >&2; exit 1; }
+done
+
 echo "=== Space after upgrade ==="
 df -h
 
